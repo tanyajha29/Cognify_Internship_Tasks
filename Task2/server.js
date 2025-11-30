@@ -1,39 +1,63 @@
 const express = require("express");
+const fs = require("fs");
 const path = require("path");
+
 const app = express();
-
 app.use(express.urlencoded({ extended: true }));
-
-let tempStorage = [];   // temporary storage
+app.use(express.json());
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
 
+const storageFile = path.join(__dirname, "data", "storage.json");
+
+// ---------- ROUTES ----------
 app.get("/", (req, res) => {
-    res.render("index");
+  res.render("index", { errors: {}, old: {} });
 });
 
 app.post("/submit", (req, res) => {
-    const { name, email, age } = req.body;
+  const { fullname, username, email, password } = req.body;
 
-    // 🔍 SERVER-SIDE VALIDATION
-    if (!name || name.length < 3) {
-        return res.send("Server: Name must be at least 3 characters.");
-    }
+  let errors = {};
 
-    if (!email.includes("@")) {
-        return res.send("Server: Invalid email.");
-    }
+  // -------- SERVER-SIDE VALIDATION --------
+  if (!fullname || fullname.length < 3) {
+    errors.fullname = "Full Name must be at least 3 characters.";
+  }
 
-    if (age < 18) {
-        return res.send("Server: Minimum age is 18.");
-    }
+  if (!username || username.length < 4) {
+    errors.username = "Username must be at least 4 characters.";
+  }
 
-    // ✔ If all valid → store in temporary storage
-    tempStorage.push({ name, email, age });
+  const emailPattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/;
+  if (!emailPattern.test(email || "")) {
+    errors.email = "Enter a valid email address.";
+  }
 
-    res.send(`Form submitted successfully! Current stored users: ${tempStorage.length}`);
+  if (!password || password.length < 6) {
+    errors.password = "Password must be at least 6 characters.";
+  }
+
+  // If errors → show form again
+  if (Object.keys(errors).length > 0) {
+    return res.render("index", {
+      errors,
+      old: { fullname, username, email }
+    });
+  }
+
+  // ---------- STORE DATA IN storage.json ----------
+  const fileData = JSON.parse(fs.readFileSync(storageFile, "utf-8"));
+  fileData.push({ fullname, username, email, password });
+  fs.writeFileSync(storageFile, JSON.stringify(fileData, null, 2));
+
+  // Successful response
+  res.render("result", { fullname, username, email });
 });
-    
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+// ---------- SERVER START ----------
+app.listen(3000, () => {
+  console.log("Server running on http://localhost:3000");
+});

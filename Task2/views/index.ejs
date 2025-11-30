@@ -1,53 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Task 2 - Advanced Form</title>
+  <meta charset="UTF-8">
+  <title>Registration Form</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
-<body style="font-family: Arial; padding: 30px;">
+<body>
 
-    <h1 style="color: #444;">Registration Form</h1>
+  <div class="card glass">
+    <h2>Register</h2>
 
-    <form id="myForm" action="/submit" method="POST" style="border: 1px solid #ccc; padding: 20px; width: 350px;">
+    <form name="userForm" action="/submit" method="POST" onsubmit="return validateForm()">
+        <input type="text" name="fullname" placeholder="Full Name" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
 
-        <label>Name:</label>
-        <input type="text" name="name" id="name" style="display:block; margin-bottom:10px;" />
-
-        <label>Email:</label>
-        <input type="email" name="email" id="email" style="display:block; margin-bottom:10px;" />
-
-        <label>Age:</label>
-        <input type="number" name="age" id="age" style="display:block; margin-bottom:10px;" />
-
-        <button type="submit" style="padding: 8px 16px;">Submit</button>
+        <button type="submit" class="btn">Submit</button>
     </form>
+  </div>
+
+  <!-- Floating animated image -->
+  <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="floating-img">
+
+  <script>
+    // ------------- INLINE JS VALIDATION -------------
+    function validateForm() {
+      const form = document.forms["userForm"];
+      const fullname = form["fullname"].value.trim();
+      const username = form["username"].value.trim();
+      const email = form["email"].value.trim();
+      const password = form["password"].value.trim();
+
+      if (fullname.length < 3) {
+        alert("Full name must be at least 3 characters!");
+        return false;
+      }
+      if (username.length < 4) {
+        alert("Username must be at least 4 characters!");
+        return false;
+      }
+      if (!email.includes("@") || !email.includes(".")) {
+        alert("Enter a valid email!");
+        return false;
+      }
+      if (password.length < 6) {
+        alert("Password must be 6+ characters!");
+        return false;
+      }
+      return true;
+    }
+  </script>
 
 </body>
-<script>
-    document.getElementById("myForm").addEventListener("submit", function(e) {
-
-        const name = document.getElementById("name").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const age = document.getElementById("age").value.trim();
-
-        if (name.length < 3) {
-            alert("Name must be at least 3 characters.");
-            e.preventDefault();
-            return;
-        }
-
-        if (!email.includes("@")) {
-            alert("Invalid email format.");
-            e.preventDefault();
-            return;
-        }
-
-        if (age < 18) {
-            alert("Age must be at least 18.");
-            e.preventDefault();
-        }
-    });
-</script>
-
 </html>
