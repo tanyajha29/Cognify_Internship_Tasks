@@ -1,3 +1,5 @@
+const session = require('express-session');
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -7,11 +9,31 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+  secret: "taskflow_secret_key_level3",
+  resave: false,
+  saveUninitialized: true,
+  cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
+}));
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-const storagePath = path.join(__dirname, 'data', 'storage.json');
+const storagePath = path.join(__dirname, 'data', 'storage.json'); // tasks (level1)
+const usersPath   = path.join(__dirname, 'data', 'users.json');   // users (level2)
 
+/* ---------- helper: safe read JSON ---------- */
+function readJsonSafe(filePath) {
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(raw || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+/* ---------- Level1 routes (keep as before) ---------- */
 // Home: show add-task form
 app.get('/', (req, res) => {
   res.render('index', { errors: [], task: {} });
@@ -31,13 +53,7 @@ app.post('/add-task', (req, res) => {
   }
 
   // read storage.json (create if missing)
-  let data = [];
-  try {
-    const raw = fs.readFileSync(storagePath, 'utf8');
-    data = JSON.parse(raw || '[]');
-  } catch (e) {
-    data = [];
-  }
+  let data = readJsonSafe(storagePath);
 
   const newTask = {
     id: Date.now(),
@@ -50,6 +66,75 @@ app.post('/add-task', (req, res) => {
   fs.writeFileSync(storagePath, JSON.stringify(data, null, 2), 'utf8');
 
   res.render('result', { task: newTask });
+});
+
+/* ---------- Level2: Registration routes ---------- */
+
+// Show registration form
+app.get('/register', (req, res) => {
+  res.render('register', { errors: {}, old: {} });
+  console.log("data",req.body);
+});
+
+// Handle registration POST
+app.post('/register', (req, res) => {
+  const { fullname, username, email, password, confirm_password } = req.body;
+
+  // server-side validation
+  const errors = {};
+  if (!fullname || fullname.trim().length < 3) {
+    errors.fullname = 'Full name must be at least 3 characters.';
+  }
+  const cleanUsername = (username || "").trim();
+
+if (cleanUsername.length < 4 || !/^[\w\-]+$/.test(cleanUsername)) {
+    errors.username = 'Username must be ≥4 chars and contain only letters, numbers, _ or -';
+}
+
+  const emailPattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailPattern.test(email)) {
+    errors.email = 'Enter a valid email address.';
+  }
+  if (!password || password.length < 6) {
+    errors.password = 'Password must be at least 6 characters.';
+  }
+  if (password !== confirm_password) {
+    errors.confirm_password = 'Passwords do not match.';
+  }
+
+  // check username/email uniqueness in users.json
+  const users = readJsonSafe(usersPath);
+  if (users.find(u => u.username.toLowerCase() === (username || '').toLowerCase())) {
+    errors.username = 'Username already taken.';
+  }
+  if (users.find(u => u.email.toLowerCase() === (email || '').toLowerCase())) {
+    errors.email = 'Email already registered.';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.render('register', { errors, old: { fullname, username, email }});
+  }
+
+  // Save new user (temporary: store plain password for Level-2; we'll hash in Level-6)
+  const newUser = {
+    id: Date.now(),
+    fullname: fullname.trim(),
+    username: username.trim(),
+    email: email.trim().toLowerCase(),
+    password: password, // NOTE: in Level-6 we'll hash this (bcrypt)
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(newUser);
+  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), 'utf8');
+
+  res.render('register-result', { user: { fullname: newUser.fullname, username: newUser.username, email: newUser.email }});
+});
+
+/* ---------- debug route (list users) - optional ---------- */
+app.get('/_debug/users', (req, res) => {
+  const users = readJsonSafe(usersPath);
+  res.json(users);
 });
 
 const PORT = process.env.PORT || 3000;

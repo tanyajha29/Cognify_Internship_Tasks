@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Register — TaskFlow</title>
+
+  <!-- Materialize CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <style>
+    .form-card { max-width: 520px; margin: 35px auto; }
+    .field-error { 
+      color: #d32f2f; 
+      font-size: 0.9rem; 
+      margin-top: 6px; 
+    }
+  </style>
+</head>
+
+<body class="grey lighten-4">
+
+  <!-- Navbar -->
+  <nav class="blue darken-2">
+    <div class="nav-wrapper container">
+      <a href="/" class="brand-logo">TaskFlow</a>
+      <ul id="nav-mobile" class="right">
+        <li><a href="/">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="card form-card hoverable">
+      <div class="card-content">
+
+        <h5 class="card-title">Create an account</h5>
+        <p class="grey-text">Register to manage your tasks and access the dashboard.</p>
+
+        <!-- Registration Form -->
+        <form action="/register" method="POST">
+
+          <!-- Full Name -->
+          <div class="input-field">
+            <input id="fullname" name="fullname" type="text" 
+                   value="<%= old.fullname || '' %>">
+            <label class="<%= old.fullname ? 'active' : '' %>" for="fullname">Full Name</label>
+            <% if (errors.fullname) { %>
+              <div class="field-error"><%= errors.fullname %></div>
+            <% } %>
+          </div>
+
+          <!-- Username -->
+          <div class="input-field">
+            <input id="username" name="username" type="text"
+                   value="<%= old.username || '' %>">
+            <label class="<%= old.username ? 'active' : '' %>" for="username">Username</label>
+            <% if (errors.username) { %>
+              <div class="field-error"><%= errors.username %></div>
+            <% } %>
+          </div>
+
+          <!-- Email -->
+          <div class="input-field">
+            <input id="email" name="email" type="email"
+                   value="<%= old.email || '' %>">
+            <label class="<%= old.email ? 'active' : '' %>" for="email">Email</label>
+            <% if (errors.email) { %>
+              <div class="field-error"><%= errors.email %></div>
+            <% } %>
+          </div>
+
+          <!-- Password -->
+          <div class="input-field">
+            <input id="password" name="password" type="password">
+            <label for="password">Password</label>
+            <% if (errors.password) { %>
+              <div class="field-error"><%= errors.password %></div>
+            <% } %>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="input-field">
+            <input id="confirm_password" name="confirm_password" type="password">
+            <label for="confirm_password">Confirm Password</label>
+            <% if (errors.confirm_password) { %>
+              <div class="field-error"><%= errors.confirm_password %></div>
+            <% } %>
+          </div>
+
+          <button class="btn waves-effect waves-light" type="submit">
+            Register
+          </button>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      M.updateTextFields(); 
+    });
+  </script>
+
+</body>
+</html>
