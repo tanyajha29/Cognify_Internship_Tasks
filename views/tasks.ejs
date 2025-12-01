@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tasks — TaskFlow</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/material.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    .task-card { margin-bottom: 12px; }
+    .task-actions { display:flex; gap:8px; }
+    .editable { cursor:pointer; }
+  </style>
+</head>
+<body class="grey lighten-4">
+  <nav class="blue darken-2">
+    <div class="nav-wrapper container">
+      <a href="/" class="brand-logo">TaskFlow</a>
+      <ul class="right">
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container" style="margin-top:24px;">
+    <div class="row">
+      <div class="col s12 m8">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Your Tasks</span>
+
+            <div id="tasksList">
+              <!-- tasks will be injected here -->
+              <div id="tasksLoading" class="center">Loading tasks…</div>
+            </div>
+
+            <hr style="margin:18px 0;">
+
+            <h6>Add new task</h6>
+            <div class="input-field">
+              <input id="newTitle" type="text">
+              <label for="newTitle">Title</label>
+            </div>
+            <div class="input-field">
+              <textarea id="newDesc" class="materialize-textarea"></textarea>
+              <label for="newDesc">Description</label>
+            </div>
+            <button id="createBtn" class="btn">Add Task</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="/js/tasks-api.js"></script>
+
+  <script>
+    // DOM helpers
+    function el(tag, props = {}, ...children) {
+      const node = document.createElement(tag);
+      Object.entries(props).forEach(([k,v])=>{
+        if (k === 'class') node.className = v;
+        else if (k === 'onclick') node.addEventListener('click', v);
+        else node.setAttribute(k, v);
+      });
+      children.flat().forEach(c => {
+        node.append(typeof c === 'string' ? document.createTextNode(c) : c);
+      });
+      return node;
+    }
+
+    // render single task card
+    function renderTaskItem(task) {
+      const container = el('div', { class: 'card task-card' },
+        el('div', { class: 'card-content' },
+          el('span', { class: 'card-title editable', onclick: () => enableEdit(task.id) }, task.title),
+          el('p', {}, task.description || ''),
+          el('div', { class: 'task-actions right' },
+            el('a', { class: 'btn-small grey lighten-1', onclick: () => startEditDialog(task) }, 'Edit'),
+            el('a', { class: 'btn-small red lighten-1', onclick: () => deleteTaskHandler(task.id) }, 'Delete')
+          )
+        )
+      );
+      return container;
+    }
+
+    // Load and show tasks
+    async function loadTasks() {
+      const list = document.getElementById('tasksList');
+      list.innerHTML = '<div id="tasksLoading" class="center">Loading tasks…</div>';
+      try {
+        const tasks = await TasksAPI.fetchTasks();
+        list.innerHTML = '';
+        if (!tasks || tasks.length === 0) {
+          list.append(el('p', {}, 'No tasks yet. Add one below.'));
+          return;
+        }
+        tasks.forEach(t => list.append(renderTaskItem(t)));
+      } catch (e) {
+        list.innerHTML = '';
+        TasksAPI.toast('Failed to load tasks', 'red lighten-1');
+      }
+    }
+
+    // Create task handler
+    document.getElementById('createBtn').addEventListener('click', async () => {
+      const title = document.getElementById('newTitle').value.trim();
+      const description = document.getElementById('newDesc').value.trim();
+
+      if (!title) { TasksAPI.toast('Title required', 'red lighten-1'); return; }
+
+      try {
+        // optimistic: disable button
+        document.getElementById('createBtn').disabled = true;
+        await TasksAPI.createTask(title, description);
+        document.getElementById('newTitle').value = '';
+        document.getElementById('newDesc').value = '';
+        M.updateTextFields();
+        TasksAPI.toast('Task added', 'green lighten-1');
+        await loadTasks();
+      } catch (err) {
+        TasksAPI.toast(err.message || 'Create failed', 'red lighten-1');
+      } finally {
+        document.getElementById('createBtn').disabled = false;
+      }
+    });
+
+    // delete handler
+    async function deleteTaskHandler(id) {
+      if (!confirm('Delete this task?')) return;
+      try {
+        await TasksAPI.deleteTask(id);
+        TasksAPI.toast('Task deleted', 'green lighten-1');
+        await loadTasks();
+      } catch (e) {
+        TasksAPI.toast(e.message || 'Delete failed', 'red lighten-1');
+      }
+    }
+
+    // edit dialog using prompt (simple)
+    function startEditDialog(task) {
+      const newTitle = prompt('Edit title', task.title);
+      if (newTitle === null) return; // cancelled
+      const newDesc = prompt('Edit description', task.description || '');
+      // send update
+      updateTaskHandler(task.id, newTitle, newDesc);
+    }
+    async function updateTaskHandler(id, title, description) {
+      try {
+        await TasksAPI.updateTask(id, { title, description });
+        TasksAPI.toast('Task updated', 'green lighten-1');
+        await loadTasks();
+      } catch (e) {
+        TasksAPI.toast(e.message || 'Update failed', 'red lighten-1');
+      }
+    }
+
+    // initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      M.updateTextFields();
+      loadTasks();
+    });
+  </script>
+</body>
+</html>

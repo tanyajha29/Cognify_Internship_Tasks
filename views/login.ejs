@@ -1,60 +1,59 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Login — TaskFlow</title>
-
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/material.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 
 <body class="grey lighten-4">
 
-  <nav class="blue darken-2">
-    <div class="nav-wrapper container">
-      <a href="/" class="brand-logo">TaskFlow</a>
-      <ul id="nav-mobile" class="right">
-        <li><a href="/register">Register</a></li>
-      </ul>
+<nav class="blue darken-2">
+  <div class="nav-wrapper container">
+    <a href="/" class="brand-logo">TaskFlow</a>
+    <ul class="right">
+      <li><a href="/register">Register</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="card form-card hoverable">
+    <div class="card-content">
+
+      <h5 class="card-title">Login</h5>
+      <p class="grey-text">Enter your credentials to continue.</p>
+
+      <% if (error) { %>
+        <div class="red-text" style="margin-bottom: 15px;"><%= error %></div>
+      <% } %>
+
+      <form action="/login" method="POST">
+
+        <div class="input-field">
+          <input type="text" id="username" name="username" required>
+          <label for="username">Username or Email</label>
+        </div>
+
+        <div class="input-field">
+          <input type="password" id="password" name="password" required>
+          <label for="password">Password</label>
+        </div>
+
+        <button class="btn waves-effect waves-light" type="submit">Login</button>
+      </form>
+
     </div>
-  </nav>
+  </div>
+</main>
 
-  <main class="container">
-    <div class="card" style="max-width: 420px; margin: 40px auto;">
-      <div class="card-content">
-
-        <h5 class="card-title">Login</h5>
-
-        <% if (error) { %>
-          <div class="red-text" style="margin-bottom:10px;"><%= error %></div>
-        <% } %>
-
-        <form action="/login" method="POST">
-
-          <div class="input-field">
-            <input id="username" name="username" type="text" required>
-            <label for="username">Username</label>
-          </div>
-
-          <div class="input-field">
-            <input id="password" name="password" type="password" required>
-            <label for="password">Password</label>
-          </div>
-
-          <button class="btn blue" type="submit">Login</button>
-
-        </form>
-      </div>
-    </div>
-  </main>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      M.updateTextFields();
-    });
-  </script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    M.updateTextFields();
+  });
+</script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-const session = require('express-session');
 
 const express = require('express');
 const path = require('path');
@@ -9,12 +8,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-  secret: "taskflow_secret_key_level3",
-  resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
-}));
 
 
 app.set('view engine', 'ejs');
@@ -136,6 +129,37 @@ app.get('/_debug/users', (req, res) => {
   const users = readJsonSafe(usersPath);
   res.json(users);
 });
+
+// Show login page
+app.get('/login', (req, res) => {
+  res.render('login', { error: null });
+});
+
+// Handle login
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const users = readJsonSafe(usersPath);
+
+  const found = users.find(u =>
+    (u.username.toLowerCase() === username.toLowerCase() ||
+     u.email.toLowerCase() === username.toLowerCase()) &&
+    u.password === password
+  );
+
+  if (!found) {
+    return res.render('login', { error: "Invalid username or password." });
+  }
+
+  // For now, store user in memory (level‑4 adds sessions)
+  res.render('login-success', { user: found });
+});
+
+// at top with other requires
+const apiRoutes = require('./routes/api');
+
+// after app.use(express.static(...)) and before your render routes:
+app.use('/api', apiRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
