@@ -1,97 +1,32 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Week Scheduler | TaskFlow</title>
-
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/dark-dashboard.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Tasks</title>
+    <link rel="stylesheet" href="/css/dark-dashboard.css">
 </head>
+<body>
 
-<body class="dark-bg">
-  <% include partials/nav %>
+    <%- include("partials/nav") %>
+    <%- include("partials/toast") %>
 
-  <main class="container week-container">
+    <div class="container">
+        <h1>Your Tasks</h1>
 
-    <!-- STATS (top) -->
-    <section class="stats-row">
-      <div class="stat-card">
-        <div class="stat-number" id="statTotal">0</div>
-        <div class="stat-label">Total</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statPending">0</div>
-        <div class="stat-label">Pending</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statProgress">0</div>
-        <div class="stat-label">In Progress</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statDone">0</div>
-        <div class="stat-label">Done</div>
-      </div>
-    </section>
-
-    <!-- WEEK SCHEDULER -->
-    <section class="scheduler">
-      <div class="timegrid header">
-        <div class="time-col head-col"></div>
-        <div id="dayHeaders" class="days-row"></div>
-      </div>
-
-      <div id="timeGrid" class="timegrid body">
-        <div class="time-col left-col"></div>
-        <div id="slotsGrid" class="slots-grid"></div>
-      </div>
-    </section>
-  </main>
-
-  <!-- floating Add/Edit Task Card -->
-  <div id="taskCard" class="task-card hidden">
-    <div class="task-card-inner">
-      <div class="task-card-header">
-        <h6 id="cardTitle">Add Task</h6>
-        <button id="closeCard" class="close-btn"><i class="material-icons">close</i></button>
-      </div>
-
-      <div class="field">
-        <input id="cardTitleInput" type="text" placeholder="Task title">
-      </div>
-
-      <div class="field">
-        <textarea id="cardDescInput" class="materialize-textarea" placeholder="Description"></textarea>
-      </div>
-
-      <div class="row small-fields">
-        <div class="col s6">
-          <input id="cardDate" type="date">
+        <!-- Task stats -->
+        <div id="stats">
+            <div>Total: <span id="stat-total">0</span></div>
+            <div>Completed: <span id="stat-completed">0</span></div>
+            <div>Pending: <span id="stat-pending">0</span></div>
         </div>
-        <div class="col s6">
-          <input id="cardTime" type="time">
-        </div>
-      </div>
 
-      <div class="row small-fields">
-        <div class="col s6">
-          <select id="cardStatus">
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Done">Done</option>
-          </select>
-        </div>
-        <div class="col s6 right-align">
-          <button id="saveTask" class="btn gradient-bg">Save</button>
-          <button id="deleteTask" class="btn-flat red-text hide">Delete</button>
-        </div>
-      </div>
+        <!-- Tasks Grid -->
+        <div id="task-grid" class="task-grid"></div>
     </div>
-  </div>
 
-  <!-- scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script src="/js/tasks-api.js"></script>
-  <script src="/js/dashboard.js"></script>
+    <script src="/js/dashboard.js"></script>
+
+    <%- include("partials/footer") %>
+
 </body>
 </html>
