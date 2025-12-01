@@ -1,0 +1,15 @@
+<!-- views/partials/nav.ejs -->
+<nav class="nav-wrapper gradient-bg">
+  <div class="container nav-inner">
+    <a href="/" class="brand-logo">TaskFlow</a>
+    <div class="nav-right">
+      <% if (typeof user !== 'undefined') { %>
+        <span class="white-text" style="margin-right:10px;"><%= user.fullname || user.username %></span>
+        <a href="/logout" class="btn-flat white-text">Logout</a>
+      <% } else { %>
+        <a href="/login" class="btn-flat white-text">Login</a>
+        <a href="/register" class="btn-flat white-text">Register</a>
+      <% } %>
+    </div>
+  </div>
+</nav>
